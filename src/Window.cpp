@@ -218,9 +218,9 @@ void Window::update(){
 
     mouseMoving = false;
 
-    if(glfwGetKey(mWindow, GLFW_KEY_ESCAPE)) {
-        glfwSetWindowShouldClose(mWindow, 1);
-    }
+    //if(glfwGetKey(mWindow, GLFW_KEY_ESCAPE)) {
+        //glfwSetWindowShouldClose(mWindow, 1);
+    //}
 
 
     glfwSwapBuffers(mWindow);
