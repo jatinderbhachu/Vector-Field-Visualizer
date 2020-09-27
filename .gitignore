@@ -1,0 +1,10 @@
+build/
+.xmake
+.clangd
+
+compile_commands.json
+vc140.pdb
+xmake.lua
+
+
+
