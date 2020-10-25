@@ -8,15 +8,21 @@ Game::Game(){
 
     ResourceManager::LoadShader("default", "vertshader.vs", "fragshader.fs");
     ResourceManager::LoadShader("particle", "particle.vs","particle.fs");
+    ResourceManager::LoadTexture("nani", "nani.png");
     ResourceManager::LoadComputeShader("computeShader", "computeShader.cs");
 
     ResourceManager::GetShader("default")->use();
 
-    glPointSize(1);
+    glPointSize(2);
 
 
-    testParticle = new GpuParticle(50000, 5,5, ResourceManager::GetShader("particle"));
-    testParticle->reload(xInput, yInput, zInput);
+    vectorField = new GpuParticle(50000, 5,5, ResourceManager::GetShader("particle"));
+    vectorField->reload(xInput, yInput, zInput);
+
+    axis = new Wireframe(ResourceManager::GetShader("particle"));
+    plane = new Wireframe(ResourceManager::GetShader("particle"));
+    axis->generateAxis(100.0f);
+    plane->generateSquare(glm::vec3(0, 0, 0), 100.0f);
 
     // delta time calculation
     lastTime = 0.0f;
@@ -67,12 +73,12 @@ void Game::run() {
     ImGui::InputText("Y input", &yInput);
     ImGui::InputText("Z input", &zInput);
     if(ImGui::Button("APPLY")) {
-        testParticle->reload(xInput, yInput, zInput);
+        vectorField->reload(xInput, yInput, zInput);
     }
     ImGui::NewLine();
 
     if(ImGui::Button("Reset")) {
-        testParticle->reset();
+        vectorField->reset();
     }
 
 
@@ -90,11 +96,11 @@ void Game::run() {
 
 
     if(mSimulationRunning)
-        testParticle->update(delta);
+        vectorField->update(delta);
 
-    testParticle->render();
-
-
+    vectorField->render();
+    plane->render();
+    axis->render();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -132,6 +138,7 @@ void Game::handleInput(){
         if(!dragging)
             prevMousePos = mousePos;
         dragging = true;
+
     }
 
     if(mWindow->isMouseReleased(GLFW_MOUSE_BUTTON_LEFT)){

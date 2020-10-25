@@ -1,5 +1,6 @@
 #pragma once
 
+#include "StaticSprite.h"
 #include "glm/fwd.hpp"
 #include <Window.h>
 #include <BatchRenderer.h>
@@ -9,6 +10,7 @@
 #include <buffers/FrameBuffer.h>
 #include <Texture.h>
 #include <GpuParticle.h>
+#include <Wireframe.h>
 
 
 class Game
@@ -25,7 +27,10 @@ class Game
         Window* mWindow;
         Camera* mCamera;
 
-        GpuParticle* testParticle;
+        GpuParticle* vectorField;
+
+        Wireframe* axis;
+        Wireframe* plane;
 
         void handleInput();
         double timer = 0.0f, delta = 0.0f, lastTime;

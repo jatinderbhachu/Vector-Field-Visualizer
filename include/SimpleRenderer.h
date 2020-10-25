@@ -6,7 +6,6 @@
 #include <AnimatedSprite.h>
 #include <deque>
 
-
 class SimpleRenderer : public Renderer {
 
     public:

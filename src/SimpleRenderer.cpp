@@ -77,6 +77,3 @@ void SimpleRenderer::renderAnimSprite(const Camera *camera, const AnimatedSprite
 
 
 
-
-
-
