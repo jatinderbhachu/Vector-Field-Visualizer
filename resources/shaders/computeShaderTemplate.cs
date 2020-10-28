@@ -10,7 +10,7 @@ layout (std430, binding = 2) buffer VectorBuffer {
     vec4 Vector[];
 };
 uniform float timestep;
-float speed = 2.0;
+uniform float speedMultiplier;
 void main()
 {
     uint index = gl_GlobalInvocationID.x;
@@ -27,7 +27,7 @@ void main()
         float vY = %s;
         float vZ = %s;
         vec3 velocity = vec3(vX, vY, vZ);
-        position += velocity * timestep * speed;
+        position += velocity * timestep * speedMultiplier;
         lifetime -= timestep;
         Particle[index] = vec4(position, lifetime);
         Vector[index] = vec4(velocity, 1);

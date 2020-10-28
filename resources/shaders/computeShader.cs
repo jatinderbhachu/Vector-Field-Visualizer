@@ -13,8 +13,7 @@ layout (std430, binding = 2) buffer VectorBuffer {
 };
 
 uniform float timestep;
-
-float speed = 2.0;
+uniform float speedMultiplier;
 
 void main()
 {
@@ -35,10 +34,9 @@ void main()
         float vZ = 0;
 
         vec3 velocity = vec3(vX, vY, vZ);
-        position += velocity * timestep * speed;
+        position += velocity * timestep * speedMultiplier;
         lifetime -= timestep;
         Vector[index] = vec4(velocity, 1);
         Particle[index] = vec4(position, lifetime);
-
     }
 }
