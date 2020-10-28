@@ -41,6 +41,7 @@ class Game
         bool dragging = false;
 
         int numParticles = 100000;
+        float speedMultiplier = 2.0;
 
         int mPointSize = 1;
         bool mSimulationRunning = true;

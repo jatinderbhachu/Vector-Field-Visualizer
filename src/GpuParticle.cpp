@@ -193,6 +193,7 @@ void GpuParticle::update(float delta)
     glUseProgram(mComputeShader);
 
     glUniform1f(glGetUniformLocation(mComputeShader, "timestep"), delta);
+    glUniform1f(glGetUniformLocation(mComputeShader, "speedMultiplier"), mSpeedMultiplier);
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, initialPositions);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, particlePositions);

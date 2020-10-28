@@ -98,6 +98,10 @@ void Game::run() {
     if (ImGui::Button("Start/Stop"))
         mSimulationRunning = !mSimulationRunning;
 
+    if(ImGui::SliderFloat("Speed Multiplier", &speedMultiplier, 0.0f, 10.0f)) {
+        vectorField->setSpeedMultiplier(speedMultiplier);
+    }
+
     if(ImGui::SliderInt("Point Size", &mPointSize, 1, 5)) {
         glPointSize(mPointSize);
     }

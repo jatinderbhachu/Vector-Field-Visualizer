@@ -28,6 +28,7 @@ public:
     void setParticleLifetime(float lifetime) { pLifetime = lifetime; };
     void setVecFieldSize(glm::vec3 size) { mVecFieldSize = size; };
     void setVecFieldPosition(glm::vec3 pos) { mVecFieldPos = pos; };
+    void setSpeedMultiplier(float speed) { mSpeedMultiplier = speed; };
 
     void loadComputeShaderTemplate();
 
@@ -35,6 +36,8 @@ public:
 
 private:
     int NUM_PARTICLES, mWidth, mHeight;
+
+    float mSpeedMultiplier = 2.0f;
 
     void generateVecField();
     
