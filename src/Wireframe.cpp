@@ -33,9 +33,9 @@ void Wireframe::generateLine(glm::vec3 p1, glm::vec3 p2) {
 
 void Wireframe::generateAxis(float size) {
     GLfloat vertices[] = {
-        size, 0.0f, 0.0f,   -size, 0.0f, 0.0f, // X axis
-        0.0f, size, 0.0f,   0.0f, -size, 0.0f, // Y axis
-        0.0f, 0.0f, size,   0.0f, 0.0f, -size  // Z axis
+        size, 0.0f, 0.0f,   0.0f, 0.0f, 0.0f, // X axis
+        0.0f, size, 0.0f,   0.0f, 0.0f, 0.0f, // Y axis
+        0.0f, 0.0f, size,   0.0f, 0.0f, 0.0f  // Z axis
     };
 
     numPoints = 6;

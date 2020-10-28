@@ -1,4 +1,5 @@
 #include <GpuParticle.h>
+#include <stdio.h>
 #include <string.h>
 
 std::string GpuParticle::computeShaderTemplate = std::string("");
@@ -26,22 +27,17 @@ void GpuParticle::loadComputeShaderTemplate() {
 }
 
 void GpuParticle::reload(std::string x, std::string y, std::string z) {
-    GpuParticle::xExpression = x;
-    GpuParticle::yExpression = y;
-    GpuParticle::zExpression = z;
+    xExpression = x;
+    yExpression = y;
+    zExpression = z;
     reloadShader(&mComputeShader);
+    generateVecField();
     reset();
 }
 
 void GpuParticle::reloadShader(GLuint* programID) {
 
     GLuint compShader = glCreateShader(GL_COMPUTE_SHADER);
-
-    // allocate enough mem for
-    //char* formattedShader = (char*)malloc( (computeShaderTemplate.size() 
-                //+ xExpression.size()
-                //+ yExpression.size() 
-                //+ zExpression.size() ) * sizeof(char));
 
     char* formattedShader = new char[(
                 computeShaderTemplate.size() 
@@ -102,27 +98,36 @@ GpuParticle::GpuParticle(int numParticles, int width, int height, Shader* partic
     loadComputeShaderTemplate();
     //reloadShader(&mComputeShader);
 
-    const siv::PerlinNoise perlin(rand() % 100);
+
+    glGenBuffers(1, &initialPositions);
+    glGenBuffers(1, &particlePositions);
+    glGenBuffers(1, &vectorField);
+
+    generateVecField();
+}
+
+void GpuParticle::generateVecField() {
+    // free the prev data
+    if(initialData != nullptr) delete [] initialData;
 
     initialData = new vec4[NUM_PARTICLES];
     vec4 *particleData = new vec4[NUM_PARTICLES];
     vec4 *vectorFieldData = new vec4[NUM_PARTICLES];
-    float increment = 1;
-    //float x = -(mWidth/2), y = -(mHeight/2), z = -(mHeight/2);
 
     float cubeSize = std::cbrt(NUM_PARTICLES);
+    float increment = mVecFieldSize.x/cubeSize;
+    if(increment < 0.5) increment = 0.5;
 
-    float x = -cubeSize/2, y = -cubeSize/2, z = -cubeSize/2;
-    int xOctave = rand() % 5;
-    int yOctave = rand() % 5;
-    int zOctave = rand() % 5;
+    float x = -(mVecFieldSize.x)/2;
+    float y = -(mVecFieldSize.y)/2;
+    float z = -(mVecFieldSize.z)/2;
 
     for (int i = 0; i < NUM_PARTICLES; i++){
-        float lifetime = (rand() / (double)RAND_MAX)*10;
+        float lifetime = (rand() / (double)RAND_MAX)*pLifetime;
         vec4 spawn;
-        spawn.x = x;
-        spawn.y = y;
-        spawn.z = z;
+        spawn.x = x + mVecFieldPos.x;
+        spawn.y = y + mVecFieldPos.y;
+        spawn.z = z + mVecFieldPos.z;
         spawn.w = lifetime;
 
 
@@ -134,28 +139,30 @@ GpuParticle::GpuParticle(int numParticles, int width, int height, Shader* partic
         vectorFieldData[i].w = 0.0;
 
         x+=increment;
-        if(x >= cubeSize/2){
+        if(x >= (mVecFieldSize.x)/2){
             y+=increment;
-            x = -cubeSize/2;
+            x = -(mVecFieldSize.x)/2;
         }
-        if(y >= cubeSize/2){
-            y = -cubeSize/2;
+        if(y >= (mVecFieldSize.y)/2){
+            y = -(mVecFieldSize.y)/2;
             z+=increment;
         }
+        if(z >= (mVecFieldSize.z)/2){
+            z = -(mVecFieldSize.z)/2;
+        }
+
     }
 
 
-    glGenBuffers(1, &initialPositions);
     glBindBuffer(GL_ARRAY_BUFFER, initialPositions);
     glBufferData(GL_ARRAY_BUFFER, NUM_PARTICLES * sizeof(vec4), initialData, GL_DYNAMIC_COPY);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glGenBuffers(1, &particlePositions);
     glBindBuffer(GL_ARRAY_BUFFER, particlePositions);
     glBufferData(GL_ARRAY_BUFFER, NUM_PARTICLES * sizeof(vec4), particleData, GL_DYNAMIC_COPY);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glGenBuffers(1, &vectorField);
+
     glBindBuffer(GL_ARRAY_BUFFER, vectorField);
     glBufferData(GL_ARRAY_BUFFER, NUM_PARTICLES * sizeof(vec4), vectorFieldData, GL_DYNAMIC_COPY);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -173,7 +180,6 @@ GpuParticle::~GpuParticle(){
     glDeleteBuffers(1, &vectorField);
 
     delete [] initialData;
-
 }
 
 void GpuParticle::reset() {
@@ -202,7 +208,7 @@ void GpuParticle::render()
 
     pShader->use();
     glm::mat4 modelMatrix(1.0f);
-    modelMatrix = glm::translate(modelMatrix, mPosition);
+    modelMatrix = glm::translate(modelMatrix, mVecFieldPos);
     glm::mat4 MVP = Camera::_projectionMatrix * Camera::_viewMatrix * modelMatrix;
 
     glUniformMatrix4fv(glGetUniformLocation(pShader->programID(), "mvp"),  1, GL_FALSE, glm::value_ptr(MVP));
@@ -211,7 +217,7 @@ void GpuParticle::render()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
 
-    glBindBuffer (GL_ARRAY_BUFFER, particlePositions);
+    glBindBuffer (GL_ARRAY_BUFFER, vectorField);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(float), 0);
 

@@ -17,8 +17,6 @@ public:
 
     void update(float delta);
     void render();
-    void setPosition(glm::vec3 pos) { mPosition = pos; };
-    glm::vec3 getPosition() const { return mPosition; };
 
     void reset();
 
@@ -26,13 +24,21 @@ public:
 
     void reload(std::string x, std::string y, std::string z);
 
+    void setParticleCount(int count) { NUM_PARTICLES = count; };
+    void setParticleLifetime(float lifetime) { pLifetime = lifetime; };
+    void setVecFieldSize(glm::vec3 size) { mVecFieldSize = size; };
+    void setVecFieldPosition(glm::vec3 pos) { mVecFieldPos = pos; };
+
     void loadComputeShaderTemplate();
 
     static std::string computeShaderTemplate;
 
 private:
     int NUM_PARTICLES, mWidth, mHeight;
-    glm::vec3 mPosition = {0, 0, 0};
+
+    void generateVecField();
+    
+    glm::vec3 mVecFieldPos = {0, 0, 0};
     GLuint initialPositions, particlePositions, vectorField;
     //Shader* cShader;
     Shader* pShader;
@@ -40,9 +46,12 @@ private:
     std::string xExpression = "0";
     std::string yExpression = "0";
     std::string zExpression = "0";
+    float pLifetime = 10;
+
+    glm::vec3 mVecFieldSize = glm::vec3(5, 5, 5);
 
 
-    vec4 *initialData;
+    vec4 *initialData = nullptr;
 
     GLuint mComputeShader = 0;
 

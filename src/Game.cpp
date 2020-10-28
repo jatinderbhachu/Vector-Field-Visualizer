@@ -1,6 +1,4 @@
 #include <Game.h>
-#include <cstdio>
-#include <stdlib.h>
 
 Game::Game(){
     mWindow = new Window("VectorFieldVisualizer", 1280, 720);
@@ -16,7 +14,7 @@ Game::Game(){
     glPointSize(2);
 
 
-    vectorField = new GpuParticle(50000, 5,5, ResourceManager::GetShader("particle"));
+    vectorField = new GpuParticle(numParticles, 5,5, ResourceManager::GetShader("particle"));
     vectorField->reload(xInput, yInput, zInput);
 
     axis = new Wireframe(ResourceManager::GetShader("particle"));
@@ -64,15 +62,30 @@ void Game::run() {
 
     ImGui::Text("%.3f ms, %.1f FPS", 1000.0f / ImGui::GetIO().Framerate,
                 ImGui::GetIO().Framerate);
-    //ImGui::Text("Time: %.3f", glfwGetTime());
-    //ImGui::Text("Cursor location: (%1.2f, %1.2f)\n", mousePos.x, mousePos.y);
     ImGui::Text("Camera location: (%1.2f, %1.2f)\n", mCamera->cameraPosition.x, mCamera->cameraPosition.y);
-    //ImGui::Text("Cursor World location: (%1.2f, %1.2f)\n", mouseWorldCoords.x, mouseWorldCoords.y);
 
+    ImGui::InputInt("Particle Count", &numParticles);
+    ImGui::InputFloat("Particle Lifetime", &particleLifetime);
+
+    ImGui::Text("Spawn Container Size");
+    ImGui::SliderFloat("Width", &vecFieldSize.x, 1, 50);
+    ImGui::SliderFloat("Height", &vecFieldSize.y, 1, 50);
+    ImGui::SliderFloat("Depth", &vecFieldSize.z, 1, 50);
+
+    ImGui::Text("Spawn Container Position");
+    ImGui::SliderFloat("X", &vecFieldPos.x, -100, 100);
+    ImGui::SliderFloat("Y", &vecFieldPos.y, -100, 100);
+    ImGui::SliderFloat("Z", &vecFieldPos.z, -100, 100);
+
+    ImGui::Text("Vector Field Equation");
     ImGui::InputText("X input", &xInput);
     ImGui::InputText("Y input", &yInput);
     ImGui::InputText("Z input", &zInput);
     if(ImGui::Button("APPLY")) {
+        vectorField->setParticleCount(numParticles);
+        vectorField->setParticleLifetime(particleLifetime);
+        vectorField->setVecFieldSize(vecFieldSize);
+        vectorField->setVecFieldPosition(vecFieldPos);
         vectorField->reload(xInput, yInput, zInput);
     }
     ImGui::NewLine();
