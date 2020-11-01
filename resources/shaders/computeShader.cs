@@ -38,5 +38,6 @@ void main()
         lifetime -= timestep;
         Vector[index] = vec4(velocity, 1);
         Particle[index] = vec4(position, lifetime);
+
     }
 }

@@ -6,12 +6,11 @@ Game::Game(){
 
     ResourceManager::LoadShader("default", "vertshader.vs", "fragshader.fs");
     ResourceManager::LoadShader("particle", "particle.vs","particle.fs");
-    ResourceManager::LoadTexture("nani", "nani.png");
     ResourceManager::LoadComputeShader("computeShader", "computeShader.cs");
 
     ResourceManager::GetShader("default")->use();
 
-    glPointSize(2);
+    glPointSize(1);
 
 
     vectorField = new GpuParticle(numParticles, 5,5, ResourceManager::GetShader("particle"));

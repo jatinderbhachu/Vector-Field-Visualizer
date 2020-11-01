@@ -11,7 +11,6 @@ void main() {
 
     distToCamera = gl_Position.w;
 
-
     f_pos = pos;
     f_vel = vel;
 }
