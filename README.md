@@ -2,8 +2,9 @@
 A 3d vector field visualizer that uses compute shaders to simulate thousands of particles.
 
 # Screenshots
-![](./screenshots/preview.gif)
-![](./screenshots/fullscreen.png)
+![](./screenshots/spiral.png)
+![](./screenshots/spiral2.png)
+![](./screenshots/cube.png)
 
 # Controls
 - Mouse wheel to zoom in/out
@@ -15,8 +16,6 @@ A 3d vector field visualizer that uses compute shaders to simulate thousands of 
 
 
 # TODO
-- Add xyz axis visual
-- add input error checking/handling
 - fix camera dragging issues
 
 
