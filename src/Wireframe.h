@@ -1,9 +1,9 @@
 #pragma once
-#include <Renderable.h>
-#include <Shader.h>
-#include <Camera.h>
-#include <buffers/VertexArray.h>
-#include <buffers/Buffer.h>
+#include "glad/glad.h"
+#include <glm/glm.hpp>
+
+class Camera;
+class Shader;
 
 class Wireframe {
 
@@ -14,17 +14,10 @@ class Wireframe {
         void generateSquare(glm::vec3 pos, float size);
         void generateAxis(float size);
 
-        void render();
+        void render(Camera* camera);
 
     private:
-
         Shader* mShader;
-
         GLuint mLinePoints, mLineColour;
-
         unsigned int numPoints;
-
-
-
-
 };

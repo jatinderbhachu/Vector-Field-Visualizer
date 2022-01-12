@@ -1,35 +1,57 @@
 #version 440
 layout (local_size_x = 128, local_size_y = 1, local_size_z = 1) in;
-layout (std430, binding = 0) buffer SpawnBuffer {
-  vec4 Spawn[];
+
+struct Particle {
+  vec4 position;
+  vec4 initialPosition;
+  vec4 velocity;
 };
-layout (std430, binding = 1) buffer ParticleBuffer {
-    vec4 Particle[];
+
+layout(std430, binding = 0) buffer ParticleBuffer {
+  Particle particles[];
 };
-layout (std430, binding = 2) buffer VectorBuffer {
-    vec4 Vector[];
-};
+
 uniform float timestep;
 uniform float speedMultiplier;
+
 void main()
 {
     uint index = gl_GlobalInvocationID.x;
-    vec3 position = Particle[index].xyz;
-    float lifetime = Particle[index].w;
+    Particle particle = particles[index];
+    vec3 position = particle.position.xyz;
+    float lifetime = particle.position.w;
     if (lifetime < 0)
     {
-        Particle[index] = Spawn[index];
-    }else{
+        particles[index].position = particles[index].initialPosition;
+        position = particles[index].position.xyz;
+
         float x = position.x;
         float y = position.y;
         float z = position.z;
+
         float vX = %s;
         float vY = %s;
         float vZ = %s;
+
+        particles[index].velocity.xyz = vec3(vX, vY, vZ);
+    } else {
+        float x = position.x;
+        float y = position.y;
+        float z = position.z;
+
+        float vX = %s;
+        float vY = %s;
+        float vZ = %s;
+
         vec3 velocity = vec3(vX, vY, vZ);
         position += velocity * timestep * speedMultiplier;
+        //position = vec3(0.0f);
         lifetime -= timestep;
-        Particle[index] = vec4(position, lifetime);
-        Vector[index] = vec4(velocity, 1);
+        particles[index].position = vec4(position, lifetime);
+        particles[index].velocity.xyz = velocity;
+        //if(length(velocity) < 0.0f)
+        //{
+          //particles[index].velocity.xyz = normalize(velocity);
+        //}
     }
 }

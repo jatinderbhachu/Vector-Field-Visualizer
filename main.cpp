@@ -7,10 +7,10 @@
 
 int main(int argc, char* args[])
 {
-    Game game = Game();
+    Game* game = new Game();
 
-    game.run();
+    game->run();
 
-
+    delete game;
     return 0;
 }

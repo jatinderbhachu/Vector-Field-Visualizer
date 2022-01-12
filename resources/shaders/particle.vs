@@ -1,17 +1,40 @@
 #version 440
-layout (location = 0) in vec4 pos;
-layout (location = 1) in vec4 vel;
+
+struct Particle {
+  vec4 position;
+  vec4 initialPosition;
+  vec4 velocity;
+};
+
+layout(std430, binding = 0) buffer ParticleBuffer {
+  Particle particles[];
+};
+
 out vec4 f_pos;
 out vec4 f_vel;
-out float distToCamera;
-uniform mat4 mvp;
+
+uniform vec2 particleScale;
+uniform mat4 cameraView;
+uniform mat4 cameraProjection;
+
+vec3 CreateQuad(in uint vertexID) {
+    uint b = 1 << vertexID;
+    return vec3((0x3 & b) != 0, (0x9 & b) != 0, 0);
+}
 
 void main() {
-    gl_Position = mvp * vec4(pos.xyz, 1.0);
+  Particle particle = particles[gl_InstanceID];
 
-    distToCamera = gl_Position.w;
+  vec3 rect = CreateQuad(gl_VertexID) - 0.5;
 
-    f_pos = pos;
-    f_vel = vel;
+  rect.x *= particleScale.x;
+  rect.y *= particleScale.y;
+
+  vec4 newPos = cameraView * vec4(particle.position.xyz, 1.0f);
+  newPos.xyz += rect;
+  gl_Position = cameraProjection * newPos;
+
+  f_pos = particle.position;
+  f_vel = particle.velocity;
 }
 

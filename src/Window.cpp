@@ -1,56 +1,51 @@
-#include <Window.h>
+#include "Window.h"
+#include "Camera.h"
 
-void error_callback(int error, const char* description)
-{
+#include <iostream>
+
+#include <imgui.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_glfw.h>
+
+
+std::unordered_map<int, Window::KeyPress> Window::mKeyPresses = {};
+std::unordered_map<int, Window::KeyPress> Window::mMouseButtons = {};
+bool    Window::mMouseMoving = false;
+bool    Window::mResizeFlag = false;
+double  Window::mMouseWheelDelta = 0.0f;
+int     Window::mWidth = 1280;
+int     Window::mHeight = 720;
+
+void error_callback(int error, const char* description) {
     //printf("Error: %s\n", description);
 }
 
-void windowSizeCallback(GLFWwindow* window, int width, int height){
-    //printf("Resize %i, %i\n", width, height);
-    Camera::setViewPort(width, height);
-    glViewport(0, 0, width, height);
+void Window::windowSizeCallback(GLFWwindow* window, int width, int height){
+    mResizeFlag = true;
+    mWidth = width;
+    mHeight = height;
 }
 
 void Window::cursorCallback(GLFWwindow* window, double xpos, double ypos){
-    mouseMoving = true;
+    mMouseMoving = true;
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    //printf("Scroll offsets: (%1.2f, %1.2f)\n", xoffset, yoffset);
-    if(yoffset > 0){
-        //Camera::zoom++;
-        Camera::scale(0.95);
-    } else {
-        //Camera::zoom -= 0.5;
-        Camera::scale(1.05);
-    }
+void Window::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+    mMouseWheelDelta = yoffset;
 }
 
-void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
+void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     mKeyPresses[key].previous = mKeyPresses[key].current;
     mKeyPresses[key].current = action;
-    KeyPress keypress = mKeyPresses[key];
-    //if(!keypress.current && keypress.previous){
-        //mKeyPresses[key].pressed = true;
-        //mKeyPresses[key].previous = 0;
-    //} else{
-        //mKeyPresses[key].pressed = false;
-    //}
-    //printf("Key: %i, action: %i, previous: %i, current: %i\n", key, action,mKeyPresses[key].previous, mKeyPresses[key].current);
 }
 
-void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
     mMouseButtons[button].previous = mMouseButtons[button].current;
     mMouseButtons[button].current = action;
 }
 
-std::map<int, KeyPress> Window::mKeyPresses = {};
-std::map<int, KeyPress> Window::mMouseButtons = {};
-
-KeyPress Window::getKey(int key){
+Window::KeyPress Window::getKey(int key){
     return mKeyPresses[key];
 }
 
@@ -93,16 +88,7 @@ bool Window::isMouseReleased(int button){
     else return false;
 }
 
-glm::vec2 Window::convertScreenToWorld(glm::vec2 pos){
-    glm::vec3 converted = glm::unProject(glm::vec3(pos.x, pos.y, 0), glm::mat4(1.0), Camera::_projectionMatrix, glm::vec4(Camera::cameraPosition.x, Camera::cameraPosition.y, Camera::mWidth, Camera::mHeight));
-    //converted += Camera::cameraPosition;
-    return {converted.x + Camera::cameraPosition.x, converted.y - Camera::cameraPosition.y};
-}
-
-Window::Window(char* title, int width, int height){
-    mTitle = title;
-    mWidth = width;
-    mHeight = height;
+Window::Window(const std::string& title, int width, int height) : mTitle(title) {
     if(!init())
         glfwTerminate();
 }
@@ -113,8 +99,6 @@ Window::~Window(){
     glfwTerminate();
 }
 
-bool Window::mouseMoving = false;
-
 bool Window::init(){
     if(!glfwInit()){
         printf("Failed to init GLFW");
@@ -123,9 +107,9 @@ bool Window::init(){
 
 
     GLFWmonitor* primary = glfwGetPrimaryMonitor();
-    
+
     const GLFWvidmode* mode = glfwGetVideoMode(primary);
-    mWindow = glfwCreateWindow( mWidth, mHeight, mTitle, NULL, NULL);
+    mWindow = glfwCreateWindow( mWidth, mHeight, mTitle.c_str(), NULL, NULL);
 
     if( mWindow == nullptr ) {
         printf("Failed to open GLFW window.\n" );
@@ -144,21 +128,17 @@ bool Window::init(){
 
     printf("OpenGL %d.%d\n", GLVersion.major, GLVersion.minor);
 
-    // Ensure we can capture keys being pressed
     glfwSetInputMode(mWindow, GLFW_STICKY_KEYS, GL_TRUE);
-
-
-
 
     printf("Window::init() done\n");
 
     glfwSetWindowUserPointer(mWindow, this);
-    //glfwSetErrorCallback(error_callback);
+    glfwSetErrorCallback(error_callback);
     glfwSetWindowSizeCallback(mWindow, windowSizeCallback);
     glfwSetCursorPosCallback(mWindow, cursorCallback);
-    glfwSetScrollCallback(mWindow, scroll_callback);
-    glfwSetKeyCallback(mWindow, key_callback);
-    glfwSetMouseButtonCallback(mWindow, mouse_button_callback);
+    glfwSetScrollCallback(mWindow, scrollCallback);
+    glfwSetKeyCallback(mWindow, keyCallback);
+    glfwSetMouseButtonCallback(mWindow, mouseButtonCallback);
 
     //glEnable(GL_PROGRAM_POINT_SIZE); 
     glEnable(GL_BLEND);
@@ -203,37 +183,20 @@ bool Window::init(){
 
 
 void Window::clear(){
-
-    // 37,41,52
-    //glClearColor(30.0/255.0, 35.0/255.0, 45.0/255.0, 1.0f);
     glClearColor(0.1, 0.1, 0.1, 1.0f);
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); 
 }
 
 void Window::update(){
-    // check for errors
-    //GLenum error = glGetError();
-    //if (error != GL_NO_ERROR)
-        //printf("[ERROR] %u", error);
-
-    mouseMoving = false;
-
-    //if(glfwGetKey(mWindow, GLFW_KEY_ESCAPE)) {
-        //glfwSetWindowShouldClose(mWindow, 1);
-    //}
-
-
+    mMouseMoving = false;
+    mResizeFlag = false;
+    mMouseWheelDelta = 0.0f;
     glfwSwapBuffers(mWindow);
 }
 
 void Window::toggleVsync(){
-    if(mVsyncEnabled){
-        glfwSwapInterval(0);
-        mVsyncEnabled = false;
-    } else {
-        glfwSwapInterval(1);
-        mVsyncEnabled = true;
-    }
+    mVsyncEnabled = !mVsyncEnabled;
+    glfwSwapInterval((int)mVsyncEnabled);
 }
 
 bool Window::closed(){

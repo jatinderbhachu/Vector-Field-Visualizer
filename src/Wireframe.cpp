@@ -1,5 +1,10 @@
+#include "Wireframe.h"
 #include "buffers/Buffer.h"
-#include <Wireframe.h>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/transform.hpp>
+#include "Camera.h"
+#include "Shader.h"
+
 
 Wireframe::Wireframe(Shader* shader) : mShader(shader) {  }
 
@@ -10,7 +15,7 @@ void Wireframe::generateLine(glm::vec3 p1, glm::vec3 p2) {
         p1.x, p1.y, p1.z,
         p2.x, p2.y, p2.z
     };
-    
+
     numPoints = 2;
 
     glGenBuffers(1, &mLinePoints);
@@ -98,12 +103,11 @@ void Wireframe::generateSquare(glm::vec3 pos, float size) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Wireframe::render() {
+void Wireframe::render(Camera* camera) {
     mShader->use();
     glm::mat4 modelMatrix(1.0f);
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, 0));
-    glm::mat4 MVP = Camera::_projectionMatrix * Camera::_viewMatrix * modelMatrix;
-
+    glm::mat4 MVP = camera->projectionMatrix() * camera->viewMatrix() * modelMatrix;
 
     glUniformMatrix4fv(glGetUniformLocation(mShader->programID(), "mvp"),  1, GL_FALSE, glm::value_ptr(MVP));
 
