@@ -2,7 +2,7 @@
 #include <glm/gtx/rotate_vector.hpp>
 
 Camera::Camera() {
-    cameraPosition = glm::vec3(10.0f);
+    cameraPosition = glm::vec3(5.0f, 2.0f, -1.0f);
     cameraRotation = glm::vec3( 0, glm::pi<float>(), 0 );
 
     mDirection = glm::vec3(0, 0, -5);
