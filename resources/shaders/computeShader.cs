@@ -23,6 +23,17 @@ void main()
     if (lifetime < 0)
     {
         particles[index].position = particles[index].initialPosition;
+        position = particles[index].position.xyz;
+
+        float x = position.x;
+        float y = position.y;
+        float z = position.z;
+
+        float vX = y+x;
+        float vY = -x+(sin(y+z));
+        float vZ = 0;
+
+        particles[index].velocity.xyz = vec3(vX, vY, vZ);
     } else {
         float x = position.x;
         float y = position.y;
@@ -34,10 +45,8 @@ void main()
 
         vec3 velocity = vec3(vX, vY, vZ);
         position += velocity * timestep * speedMultiplier;
-        //position = vec3(0.0f);
         lifetime -= timestep;
         particles[index].position = vec4(position, lifetime);
         particles[index].velocity.xyz = velocity;
-
     }
 }

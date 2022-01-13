@@ -7,10 +7,8 @@
 
 int main(int argc, char* args[])
 {
-    Game* game = new Game();
+    Game game;
+    game.run();
 
-    game->run();
-
-    delete game;
     return 0;
 }

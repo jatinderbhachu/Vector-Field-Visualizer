@@ -9,7 +9,7 @@
 #include <fstream>
 #include <string.h>
 
-GpuParticle::GpuParticle(int numParticles, int width, int height) : NUM_PARTICLES(numParticles), mWidth(width), mHeight(height)
+GpuParticle::GpuParticle(int numParticles, int width, int height) : NUM_PARTICLES(numParticles), mNumActiveParticles(numParticles)
 {
     loadComputeShaderTemplate();
 
@@ -78,14 +78,14 @@ void GpuParticle::reloadShader() {
     glShaderSource(compShader, 1, &formattedShader, nullptr);
     glCompileShader(compShader);
 
+    bool hasError = false;;
+
     // Check Compute Shader
     glGetShaderiv(compShader, GL_COMPILE_STATUS, &Result);
     glGetShaderiv(compShader, GL_INFO_LOG_LENGTH, &InfoLogLength);
     if ( InfoLogLength > 0 ){
-        printf("Error in compiling compute shader\n");
-        std::vector<char> FragmentShaderErrorMessage(InfoLogLength+1);
-        glGetShaderInfoLog(compShader, InfoLogLength, nullptr, &FragmentShaderErrorMessage[0]);
-        printf("%s", &FragmentShaderErrorMessage[0]);
+        std::cout << "Error in compiling compute shader\n";
+        hasError = true;
     }
 
 
@@ -97,18 +97,20 @@ void GpuParticle::reloadShader() {
     glGetProgramiv(computeShader, GL_LINK_STATUS, &Result);
     glGetProgramiv(computeShader, GL_INFO_LOG_LENGTH, &InfoLogLength);
     if ( InfoLogLength > 0 ){
-        printf("Error in linking compute shader\n");
-        std::vector<char> FragmentShaderErrorMessage(InfoLogLength+1);
-        glGetShaderInfoLog(compShader, InfoLogLength, nullptr, &FragmentShaderErrorMessage[0]);
-        printf("%s", &FragmentShaderErrorMessage[0]);
+        std::cout << "Error in linking compute shader\n";
+        hasError = true;
     }
 
     delete [] formattedShader;
     glad_glDeleteShader(compShader);
 
-    glDeleteProgram(mComputeShader);
+    if(!hasError) {
+        glDeleteProgram(mComputeShader);
 
-    mComputeShader = computeShader;
+        mComputeShader = computeShader;
+    } else {
+        std::cout << "Error in shader input";
+    }
 
 }
 
@@ -152,6 +154,8 @@ void GpuParticle::generateVecField() {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, mParticleBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER, NUM_PARTICLES * sizeof(Particle), particleData.data(), GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    mNumActiveParticles = NUM_PARTICLES;
 }
 
 void GpuParticle::update(float delta) {
@@ -159,7 +163,7 @@ void GpuParticle::update(float delta) {
     glUniform1f(glGetUniformLocation(mComputeShader, "timestep"), delta);
     glUniform1f(glGetUniformLocation(mComputeShader, "speedMultiplier"), mSpeedMultiplier);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, mParticleBuffer);
-    glDispatchCompute((NUM_PARTICLES/128) + 1, 1, 1);
+    glDispatchCompute((mNumActiveParticles/128) + 1, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
@@ -175,6 +179,6 @@ void GpuParticle::render(Camera* camera) {
     glUniformMatrix4fv(glGetUniformLocation(particleShaderID, "cameraProjection"),  1, GL_FALSE, glm::value_ptr(camera->projectionMatrix()));
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, mParticleBuffer);
-    glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, NUM_PARTICLES);
+    glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, mNumActiveParticles);
 }
 

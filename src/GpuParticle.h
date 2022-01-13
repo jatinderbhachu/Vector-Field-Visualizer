@@ -34,13 +34,13 @@ public:
     glm::vec2 mParticleScale = {0.015f, 0.015f};
     float mSpeedMultiplier = 2.0f;
     float mLifetime = 10;
-    int NUM_PARTICLES, mWidth, mHeight;
+    uint32_t NUM_PARTICLES;
 
 private:
-
     void loadComputeShaderTemplate();
     void generateVecField();
 
+    uint32_t mNumActiveParticles;
     GLuint mParticleBuffer;
     GLuint mEmptyVAO = 0;
     GLuint mComputeShader = 0;

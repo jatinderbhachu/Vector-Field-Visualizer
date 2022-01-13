@@ -14,6 +14,7 @@
 Game::Game(){
     mWindow = std::make_unique<Window>("VectorFieldVisualizer", 1280, 720);
     mCamera = std::make_unique<Camera>();
+    mCamera->setViewPort(1280, 720);
 
     ResourceManager::LoadShader("default", "vertshader.vs", "fragshader.fs");
     ResourceManager::LoadShader("particle", "particle.vs","particle.fs");
@@ -29,7 +30,7 @@ Game::Game(){
     mAxis->generateAxis(100.0f);
     mPlane->generateSquare(glm::vec3(0, 0, 0), 100.0f);
 
-    // delta time calculation
+    // for delta time calculation
     mLastTime = 0.0f;
 }
 
@@ -63,9 +64,9 @@ void Game::run() {
 
         ImGui::Text("%.3f ms, %.1f FPS", 1000.0f / ImGui::GetIO().Framerate,
                     ImGui::GetIO().Framerate);
-        ImGui::Text("Camera location: (%1.2f, %1.2f)\n", mCamera->cameraPosition.x, mCamera->cameraPosition.y);
+        ImGui::Text("Camera location: (%1.2f, %1.2f)\n", mCamera->mCameraPosition.x, mCamera->mCameraPosition.y);
 
-        ImGui::InputInt("Particle Count", &mVectorField->NUM_PARTICLES);
+        ImGui::InputScalar("Particle Count", ImGuiDataType_U32, &mVectorField->NUM_PARTICLES);
         ImGui::InputFloat("Particle Lifetime", &mVectorField->mLifetime);
 
         ImGui::Text("Spawn Container Size");
@@ -120,10 +121,10 @@ void Game::handleInput(){
 
     double mouseWheelDelta = mWindow->getMouseWheelDelta();
 
-    if(mouseWheelDelta > 1.0) {
-        mCamera->cameraPosition *= 0.95f;
+    if(mouseWheelDelta > 0.0) {
+        mCamera->mCameraPosition *= 0.95f;
     } else if(mouseWheelDelta < 0.0) {
-        mCamera->cameraPosition *= 1.05f;
+        mCamera->mCameraPosition *= 1.05f;
     }
 
     double mouseX = 0.0f;
@@ -147,7 +148,7 @@ void Game::handleInput(){
     if(Window::isMouseMoving()){
         if(mDragging){
             mDeltaMousePos = mPrevMousePos-mMousePos;
-            mCamera->moveCamera({mDeltaMousePos.x, -mDeltaMousePos.y, 0});
+            mCamera->rotateCamera({mDeltaMousePos.x, -mDeltaMousePos.y});
 
             mPrevMousePos = mMousePos;
         }

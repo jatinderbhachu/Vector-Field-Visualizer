@@ -1,18 +1,18 @@
 #include "Camera.h"
+#include <iostream>
 #include <glm/gtx/rotate_vector.hpp>
 
-Camera::Camera() {
-    cameraPosition = glm::vec3(5.0f, 2.0f, -1.0f);
-    cameraRotation = glm::vec3( 0, glm::pi<float>(), 0 );
-
-    mDirection = glm::vec3(0, 0, -5);
-    mUp = glm::vec3(0, 1, 0);
-    mRight = glm::vec3(1, 0, 0);
+Camera::Camera() 
+    : mCameraPosition(5.0f, 2.0f, -1.0f), 
+    mDirection(0.0f), 
+    mUp(0.0f, 1.0f, 0.0f), 
+    mRight(0.0f), 
+    mOrbitPos(0.0f) {
 }
 
-void Camera::moveCamera(glm::vec3 delta) { 
-    cameraPosition = glm::rotateY(cameraPosition, glm::radians(delta.x));
-    cameraPosition = glm::rotate(cameraPosition, glm::radians(delta.y), glm::cross(cameraPosition, {0, 1, 0}));
+void Camera::rotateCamera(glm::vec2 mouseDelta) { 
+    mCameraPosition = glm::rotateY(mCameraPosition, glm::radians(mouseDelta.x));
+    mCameraPosition = glm::rotate(mCameraPosition, glm::radians(mouseDelta.y), glm::cross(mCameraPosition, {0, 1, 0}));
 }
 
 
@@ -25,27 +25,15 @@ void Camera::setViewPort(int width, int height){
 void Camera::update(){
     mProjectionMatrix = glm::perspective(glm::radians(90.0f), (float)mWidth/(float)mHeight, 1.0f, 5000.0f);
 
-    mDirection = glm::vec3(
-            cos(cameraRotation.x) * sin(cameraRotation.y),
-            sin(cameraRotation.x),
-            cos(cameraRotation.x) * cos(cameraRotation.y)
-            );
+    mRight = glm::transpose(mViewMatrix)[0];
+    mDirection = -glm::normalize(mCameraPosition - mOrbitPos);
+    mUp = glm::normalize(glm::cross(mRight, mDirection));
 
-    // Right vector
-    mRight = glm::vec3(
-            sin(cameraRotation.y - glm::pi<float>()/2.0f),
-            0,
-            cos(cameraRotation.y - glm::pi<float>()/2.0f)
-            );
-    mRight = glm::rotateZ(mRight, cameraRotation.z);
-
-    mUp = glm::cross( mRight, mDirection );
-
-    glm::vec3 pos = {cameraPosition.x, cameraPosition.y, cameraPosition.z};
+    glm::vec3 pos = {mCameraPosition.x, mCameraPosition.y, mCameraPosition.z};
 
     mViewMatrix = glm::lookAt(
             pos,
-            {0, 0, 0},
-            mUp
+            mOrbitPos,
+            {0, 1, 0}
             );
 }

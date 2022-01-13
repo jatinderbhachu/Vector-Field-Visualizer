@@ -45,13 +45,8 @@ void main()
 
         vec3 velocity = vec3(vX, vY, vZ);
         position += velocity * timestep * speedMultiplier;
-        //position = vec3(0.0f);
         lifetime -= timestep;
         particles[index].position = vec4(position, lifetime);
         particles[index].velocity.xyz = velocity;
-        //if(length(velocity) < 0.0f)
-        //{
-          //particles[index].velocity.xyz = normalize(velocity);
-        //}
     }
 }

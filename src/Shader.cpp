@@ -117,15 +117,15 @@ GLuint Shader::loadComputeShader(const std::string& computeShaderPath) {
     int InfoLogLength;
 
     std::string ComputeShaderCode;
-    std::ifstream VertexShaderStream(computeShaderPath, std::ios::in);
-    if(VertexShaderStream.is_open()){
+    std::ifstream shaderStream(computeShaderPath, std::ios::in);
+    if(shaderStream.is_open()){
         std::string Line = "";
-        while(getline(VertexShaderStream, Line)) {
+        while(getline(shaderStream, Line)) {
             ComputeShaderCode += "\n" + Line;
         }
-        VertexShaderStream.close();
+        shaderStream.close();
     }else{
-        printf("Can't open %s\n", computeShaderPath.c_str());
+        std::cout << "Can't open " << computeShaderPath << std::endl;
         return 0;
     }
 
@@ -139,10 +139,9 @@ GLuint Shader::loadComputeShader(const std::string& computeShaderPath) {
     glGetShaderiv(compShader, GL_COMPILE_STATUS, &Result);
     glGetShaderiv(compShader, GL_INFO_LOG_LENGTH, &InfoLogLength);
     if ( InfoLogLength > 0 ){
-        //printf("Error in compiling compute shader\n");
-        std::vector<char> FragmentShaderErrorMessage(InfoLogLength+1);
-        glGetShaderInfoLog(compShader, InfoLogLength, nullptr, &FragmentShaderErrorMessage[0]);
-        //printf("%s", &FragmentShaderErrorMessage[0]);
+        printf("Error in compiling compute shader\n");
+        std::vector<char> shaderErrorMessage(InfoLogLength+1);
+        glGetShaderInfoLog(compShader, InfoLogLength, nullptr, &shaderErrorMessage[0]);
     }
 
 
@@ -154,9 +153,9 @@ GLuint Shader::loadComputeShader(const std::string& computeShaderPath) {
     glGetProgramiv(_programID, GL_INFO_LOG_LENGTH, &InfoLogLength);
     if ( InfoLogLength > 0 ){
         printf("Error in linking compute shader\n");
-        std::vector<char> FragmentShaderErrorMessage(InfoLogLength+1);
-        glGetShaderInfoLog(compShader, InfoLogLength, nullptr, &FragmentShaderErrorMessage[0]);
-        printf("%s", &FragmentShaderErrorMessage[0]);
+        std::vector<char> shaderErrorMessage(InfoLogLength+1);
+        glGetShaderInfoLog(compShader, InfoLogLength, nullptr, &shaderErrorMessage[0]);
+        printf("%s", &shaderErrorMessage[0]);
     }
 
     return _programID;
