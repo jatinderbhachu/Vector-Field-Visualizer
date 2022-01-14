@@ -32,7 +32,7 @@ public:
     glm::vec3 mVecFieldSize = glm::vec3(4.0f);
     glm::vec3 mVecFieldPos = {0, 0, 0};
     glm::vec2 mParticleScale = {0.015f, 0.015f};
-    float mSpeedMultiplier = 2.0f;
+    float mSpeedMultiplier = 1.0f;
     float mLifetime = 10;
     uint32_t NUM_PARTICLES;
 

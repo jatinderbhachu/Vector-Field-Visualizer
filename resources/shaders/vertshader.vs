@@ -1,22 +1,13 @@
 #version 330 core
-layout (location = 0) in vec4 pos;
-layout (location = 1) in vec4 colour;
-layout (location = 2) in vec2 texCoord;
-layout (location = 3) in float texID;
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec3 color;
 
-// uniform mat4 Model;
-// uniform mat4 View;
-// uniform mat4 Projection;
 uniform mat4 MVP;
 
-out vec4 aColour; // specify a color output to the fragment shader
-out vec2 aTexCoord;
-out float aTexID;
+out vec4 aColor;
 
 void main()
 {
-    gl_Position = MVP * pos;
-    aColour = colour;
-    aTexCoord = texCoord;
-    aTexID = texID;
+    gl_Position = MVP * vec4(pos, 1.0f);
+    aColor = vec4(color, 1);
 }

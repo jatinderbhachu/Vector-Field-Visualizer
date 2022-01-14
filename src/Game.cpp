@@ -25,8 +25,8 @@ Game::Game(){
     mVectorField = std::make_unique<GpuParticle>(50000, 5, 5);
     mVectorField->reload(xInput, yInput, zInput);
 
-    mAxis = std::make_unique<Wireframe>(ResourceManager::GetShader("particle"));
-    mPlane = std::make_unique<Wireframe>(ResourceManager::GetShader("particle"));
+    mAxis = std::make_unique<Wireframe>();
+    mPlane = std::make_unique<Wireframe>();
     mAxis->generateAxis(100.0f);
     mPlane->generateSquare(glm::vec3(0, 0, 0), 100.0f);
 

@@ -106,9 +106,9 @@ bool Window::init(){
     }
 
 
-    GLFWmonitor* primary = glfwGetPrimaryMonitor();
-
-    const GLFWvidmode* mode = glfwGetVideoMode(primary);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     mWindow = glfwCreateWindow( mWidth, mHeight, mTitle.c_str(), NULL, NULL);
 
     if( mWindow == nullptr ) {
@@ -140,17 +140,12 @@ bool Window::init(){
     glfwSetKeyCallback(mWindow, keyCallback);
     glfwSetMouseButtonCallback(mWindow, mouseButtonCallback);
 
-    //glEnable(GL_PROGRAM_POINT_SIZE); 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
-    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE ); // wireframe
+    glDepthMask(GL_FALSE);
 
     int textureUnits;
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits);
-    printf("Max textureUnits: %i\n", textureUnits);
+
     int work_grp_cnt[3];
     int work_grp_size[3];
-
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &work_grp_cnt[0]);
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &work_grp_cnt[1]);
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &work_grp_cnt[2]);
@@ -164,7 +159,6 @@ bool Window::init(){
     printf("max local (in one shader) work group sizes x:%i y:%i z:%i\n",
             work_grp_size[0], work_grp_size[1], work_grp_size[2]);
 
-
     // Setup ImGui binding
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -174,7 +168,6 @@ bool Window::init(){
     const char* glsl_version = "#version 130";
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    // Setup style
     ImGui::StyleColorsDark();
 
     return true;

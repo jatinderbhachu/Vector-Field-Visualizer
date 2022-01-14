@@ -1,123 +1,90 @@
 #include "Wireframe.h"
+#include "ResourceManager.h"
 #include "buffers/Buffer.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
 #include "Camera.h"
 #include "Shader.h"
 
-
-Wireframe::Wireframe(Shader* shader) : mShader(shader) {  }
-
-void Wireframe::generateLine(glm::vec3 p1, glm::vec3 p2) {
-
-    GLfloat vertices[] = {
-        // positions 
-        p1.x, p1.y, p1.z,
-        p2.x, p2.y, p2.z
-    };
-
-    numPoints = 2;
-
-    glGenBuffers(1, &mLinePoints);
-    glBindBuffer(GL_ARRAY_BUFFER, mLinePoints);
-    glBufferData(GL_ARRAY_BUFFER, numPoints*3 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+#include <iostream>
 
 
-    GLfloat colours[] = {
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f
-    };
+void Wireframe::generateBuffers(std::vector<float>& vertices, std::vector<uint32_t>& indices) {
+    std::cout << vertices.size() << std::endl;
 
-    glGenBuffers(1, &mLineColour);
-    glBindBuffer(GL_ARRAY_BUFFER, mLineColour);
-    glBufferData(GL_ARRAY_BUFFER, numPoints*3 * sizeof(GLfloat), colours, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glGenVertexArrays(1, &mVAO);
+    glGenBuffers(1, &mVertexBuffer);
+    glGenBuffers(1, &mIndexBuffer);
 
+    glBindVertexArray(mVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)sizeof(glm::vec3));
+    glEnableVertexAttribArray(1);
 }
 
+void Wireframe::generateLine(glm::vec3 p1, glm::vec3 p2) {
+    std::vector<float> vertices = {
+        // positions      // colors
+        p1.x, p1.y, p1.z, 1.0f, 1.0f, 1.0f, 
+        p2.x, p2.y, p2.z, 1.0f, 1.0f, 1.0f
+    };
+
+    std::vector<uint32_t> indices = {0, 1};
+
+    mNumIndices = indices.size();
+
+    generateBuffers(vertices, indices);
+}
+
+
 void Wireframe::generateAxis(float size) {
-    GLfloat vertices[] = {
-        size, 0.0f, 0.0f,   0.0f, 0.0f, 0.0f, // X axis
-        0.0f, size, 0.0f,   0.0f, 0.0f, 0.0f, // Y axis
-        0.0f, 0.0f, size,   0.0f, 0.0f, 0.0f  // Z axis
+    std::vector<float> vertices = {
+        0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        size, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, size, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, size, 0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
     };
 
-    numPoints = 6;
+    std::vector<uint32_t> indices = {0, 1, 2, 3, 4, 5};
 
+    mNumIndices = indices.size();
 
-    glGenBuffers(1, &mLinePoints);
-    glBindBuffer(GL_ARRAY_BUFFER, mLinePoints);
-    glBufferData(GL_ARRAY_BUFFER, numPoints*3 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-
-    GLfloat colours[] = {
-        1.0f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f, 
-        0.0f, 1.0f, 0.0f,    0.0f, 1.0f, 0.0f,  
-        0.0f, 0.0f, 1.0f,    0.0f, 0.0f, 1.0f 
-    };
-
-
-    glGenBuffers(1, &mLineColour);
-    glBindBuffer(GL_ARRAY_BUFFER, mLineColour);
-    glBufferData(GL_ARRAY_BUFFER, numPoints*3 * sizeof(GLfloat), colours, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+    generateBuffers(vertices, indices);
 }
 
 void Wireframe::generateSquare(glm::vec3 pos, float size) {
-    GLfloat vertices[] = {
-        size,  0.0f,   size, 
-        size,  0.0f,   -size,
-        size,  0.0f,   -size,
-        -size, 0.0f,   -size,
-        -size, 0.0f,   -size,
-        -size, 0.0f,   size, 
-        size,  0.0f,   size, 
-        -size, 0.0f,   size
-    };
-    
-    numPoints = 8;
-
-    glGenBuffers(1, &mLinePoints);
-    glBindBuffer(GL_ARRAY_BUFFER, mLinePoints);
-    glBufferData(GL_ARRAY_BUFFER, numPoints*3 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-
-    GLfloat colours[] = {
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f
+    std::vector<float> vertices = {
+        size,  0.0f,   size, 1.0f, 1.0f, 1.0f,
+        size,  0.0f,  -size, 1.0f, 1.0f, 1.0f,
+        -size, 0.0f,  -size, 1.0f, 1.0f, 1.0f,
+        -size, 0.0f,   size, 1.0f, 1.0f, 1.0f,
     };
 
-    glGenBuffers(1, &mLineColour);
-    glBindBuffer(GL_ARRAY_BUFFER, mLineColour);
-    glBufferData(GL_ARRAY_BUFFER, numPoints*3 * sizeof(GLfloat), colours, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    std::vector<uint32_t> indices = {0, 1, 1, 2, 2, 3, 3, 0};
+
+    mNumIndices = indices.size();
+
+    generateBuffers(vertices, indices);
 }
 
 void Wireframe::render(Camera* camera) {
-    mShader->use();
-    glm::mat4 modelMatrix(1.0f);
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, 0));
-    glm::mat4 MVP = camera->projectionMatrix() * camera->viewMatrix() * modelMatrix;
+    Shader* shader = ResourceManager::GetShader("default");
+    shader->use();
 
-    glUniformMatrix4fv(glGetUniformLocation(mShader->programID(), "mvp"),  1, GL_FALSE, glm::value_ptr(MVP));
+    glm::mat4 MVP = camera->projectionMatrix() * camera->viewMatrix();
+    glUniformMatrix4fv(glGetUniformLocation(shader->programID(), "MVP"),  1, GL_FALSE, glm::value_ptr(MVP));
 
-    glBindBuffer (GL_ARRAY_BUFFER, mLinePoints);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), 0);
-
-    glBindBuffer (GL_ARRAY_BUFFER, mLineColour);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), 0);
-
-    glDrawArrays(GL_LINES, 0, numPoints);
+    //glLineWidth(1.0f);
+    glBindVertexArray(mVAO);
+    glDrawElements(GL_LINES, mNumIndices, GL_UNSIGNED_INT, 0);
 }
