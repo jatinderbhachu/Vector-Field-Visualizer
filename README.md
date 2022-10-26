@@ -1,5 +1,5 @@
 # Vector-Field-Visualizer (WIP)
-A 3d vector field visualizer that uses compute shaders to simulate thousands of particles.
+A 3d vector field visualizer that uses compute shaders to simulate millions of particles.
 
 # Screenshots
 ![](./screenshots/spiral.png)
